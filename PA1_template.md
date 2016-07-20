@@ -1,36 +1,37 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 unzip("activity.zip")
 data<-read.csv("activity.csv")
 ```
 
 ## What is mean total number of steps taken per day?
 
-```{r}
+
+```r
 numberStepsPerDay<-aggregate(data$steps, list(data$date), sum)[,2]
 hist(numberStepsPerDay, border = "dark blue", col="lightblue", breaks=20,
     main="Histogram of total number of steps taken each day.",
     xlab="Total number of steps each day")
 ```
-```{r}
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
+```r
 meanStepsPerDay<-mean(numberStepsPerDay, na.rm=TRUE)
 medianStepsPerDay<-median(numberStepsPerDay, na.rm=TRUE)
 ```
-The mean of the total number of steps per day is `r format(meanStepsPerDay)`.  
-The median of the total number of steps per day is `r format(medianStepsPerDay)`.
+The mean of the total number of steps per day is 10766.19.  
+The median of the total number of steps per day is 10765.
 
 ## What is the average daily activity pattern?
 
-```{r}
+
+```r
 averageSteps<-aggregate(data$steps, list(factor(data$interval)), mean, na.rm=TRUE)
 names(averageSteps)<-c("interval","mean")
 plot.new()
@@ -42,36 +43,47 @@ plot(x=averageSteps$interval, y=averageSteps$mean, type="l",
 lines(x=averageSteps$interval, y=averageSteps$mean)
 ```
 
-```{r}
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
+
+```r
 maxInterval<-averageSteps$interval[which(averageSteps$mean==max(averageSteps$mean))]
 ```
-The 5-minute interval, which, on average across all the days in the dataset, contains the maximum number of steps is: `r maxInterval`.  
+The 5-minute interval, which, on average across all the days in the dataset, contains the maximum number of steps is: 835.  
 
 ## Imputing missing values
 
-```{r}
+
+```r
 missing.amount<-sum(is.na(data))
 ```
-The total number of missing values in the dataset is `r missing.amount`.  
+The total number of missing values in the dataset is 2304.  
 
 The strategy for filling in the missing values in the dataset is to use the mean for that 5-minute interval.
-```{r}
+
+```r
 data.filled<-data
 data.filled$steps<-ifelse(is.na(data$steps),averageSteps$mean[match(data$interval,averageSteps$interval)],data$steps)
 numberStepsPerDay.filled<-aggregate(data.filled$steps, list(data.filled$date), sum)[,2]
 hist(numberStepsPerDay.filled, border = "dark blue", col="lightblue", breaks=20,
     main="Histogram of total number of steps taken each day\nwith missing values replaced by mean of 5-minute interval.",
     xlab="Total number of steps each day")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+
+```r
 meanStepsPerDay.filled<-mean(numberStepsPerDay.filled, na.rm=TRUE)
 medianStepsPerDay.filled<-median(numberStepsPerDay.filled, na.rm=TRUE)
 ```
-The mean of the total number of steps per day is `r format(meanStepsPerDay.filled)`.  
-The median of the total number of steps per day is `r format(medianStepsPerDay.filled)`.  
+The mean of the total number of steps per day is 10766.19.  
+The median of the total number of steps per day is 10766.19.  
 
 The impact of imputing missing data on the estimates of the total numbers of steps is that there are much more of the values occuring around the average, as shown by the high peak, while the remaining frequencies are unchanged. The mean value is unchanged, while the median value is now identical to one of the filled in values.
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+
+```r
 library(dplyr, warn.conflicts=FALSE, verbose=FALSE, quietly=TRUE)
 data.filled<-mutate(data.filled, 
     typeOfDay = factor(ifelse(weekdays(as.Date(date))=="Sunday"|weekdays(as.Date(date))=="Saturday","weekend","weekday")))
@@ -95,5 +107,7 @@ plot(x=averageSteps.weekend$interval, y=averageSteps.weekend$mean, type="l",
     ylab="Average steps")
 lines(x=averageSteps.weekend$interval, y=averageSteps.weekend$mean)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
 
 One of the differences between weekdays and weekends is that significant activity starts and ends later in the weekends.
